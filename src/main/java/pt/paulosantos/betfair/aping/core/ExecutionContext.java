@@ -1,9 +1,7 @@
 package pt.paulosantos.betfair.aping.core;
 
 /**
- * User: Paulo
- * Date: 10-05-2013
- * Time: 21:58
+ * @author Paulo
  */
 public class ExecutionContext {
     private String applicationKey;
