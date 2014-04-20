@@ -1,0 +1,13 @@
+#intellij files
+.idea
+*iml
+
+#mockserver files
+*.jks
+*.log
+
+target
+*.jar
+*.class
+
+

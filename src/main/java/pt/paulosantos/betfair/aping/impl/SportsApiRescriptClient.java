@@ -11,6 +11,7 @@ import pt.paulosantos.betfair.aping.core.ExecutionContext;
 import pt.paulosantos.betfair.aping.enums.ApiNgOperation;
 import pt.paulosantos.betfair.aping.enums.Parameter;
 import pt.paulosantos.betfair.aping.exceptions.APINGException;
+import pt.paulosantos.betfair.aping.exceptions.ErrorCode;
 
 import java.io.IOException;
 import java.util.Map;
@@ -52,15 +53,15 @@ public class SportsApiRescriptClient extends AbstractSportsApiClient {
             }
 
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            LOG.error("Unable to send request", e);
         } catch (TimeoutException e) {
-            e.printStackTrace();
+            throw new APINGException(e.getMessage(), ErrorCode.TIMEOUT_ERROR, null);
         } catch (ExecutionException e) {
-            e.printStackTrace();
+            LOG.error("Unable to send request", e);
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            LOG.error("Error processing json", e);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.error("Error mapping response to java object", e);
         }
 
         return null;
