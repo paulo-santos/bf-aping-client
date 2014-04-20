@@ -1,5 +1,6 @@
 package pt.paulosantos.betfair.aping;
 
+import com.betfair.aping.LoginResponse;
 import com.betfair.aping.betting.entities.*;
 import com.betfair.aping.betting.enums.*;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -7,6 +8,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.api.ContentResponse;
+import org.eclipse.jetty.client.util.StringContentProvider;
 import org.eclipse.jetty.util.HttpCookieStore;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.slf4j.Logger;
@@ -16,8 +19,15 @@ import pt.paulosantos.betfair.aping.enums.ApiNgOperation;
 import pt.paulosantos.betfair.aping.enums.Parameter;
 import pt.paulosantos.betfair.aping.exceptions.APINGException;
 
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
 import javax.validation.constraints.NotNull;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
+import java.security.KeyStore;
+import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -296,6 +306,40 @@ public abstract class AbstractSportsApiClient implements APINGBettingService {
         params.put(Parameter.CUSTOMER_REF, customerRef);
 
         return execute(executionContext, ApiNgOperation.UPDATE_ORDERS, params);
+    }
+
+    //Creating a new HttpClient for each request because only the login method requires certificate authentication
+    //Adding the certificate to the others requests will probably result in slower responses. Need to test it
+    public LoginResponse login(String username, String password, String keyStorePath, String keyStorePassword, String appkey) throws Exception {
+        SslContextFactory sslContextFactory = new SslContextFactory();
+
+        SSLContext ctx = SSLContext.getInstance("TLS");
+        KeyManager[] keyManagers = getKeyManagers("pkcs12", new FileInputStream(new File(keyStorePath)), keyStorePassword);
+        ctx.init(keyManagers, null, new SecureRandom());
+
+        sslContextFactory.setSslContext(ctx);
+
+        HttpClient httpClient = new HttpClient(sslContextFactory);
+        httpClient.start();
+
+        ContentResponse contentResponse = httpClient
+                .POST("https://identitysso.betfair.com/api/certlogin")
+                .header("X-Application", appkey)
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .content(new StringContentProvider("username="+username+"&password="+password))
+                .send();
+
+        httpClient.stop();
+
+        return objectMapper.readValue(contentResponse.getContentAsString(), LoginResponse.class);
+    }
+
+    private static KeyManager[] getKeyManagers(String keyStoreType, InputStream keyStoreFile, String keyStorePassword) throws Exception {
+        KeyStore keyStore = KeyStore.getInstance(keyStoreType);
+        keyStore.load(keyStoreFile, keyStorePassword.toCharArray());
+        KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+        kmf.init(keyStore, keyStorePassword.toCharArray());
+        return kmf.getKeyManagers();
     }
 
     protected abstract <T> T execute(ExecutionContext executionContext, ApiNgOperation operation, Map<Parameter, Object> params)
