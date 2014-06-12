@@ -3,3 +3,9 @@ jdk:
   - oraclejdk7
   - openjdk7
   - oraclejdk8
+after_success:
+  - "bash deploySnapshotBuild.sh"
+env:
+  global:
+    - secure: "M8nHppyozfQP6y0bvWqb6Ya4eOA1CWieZBDKzcmJ7oPRpbYCYMkAws/yRyHcXojmvVgOR4viglbw6ahwoThIMTf6PGSRAeznx65OaNjeCqFYIS37gVvaXXOdG1i2KKS+tAjfzX1uIJRBxFPjdExMkdsSW3nKNou/P/F3dlm1erQ="
+    - secure: "EdHMKD2TUfwMTPxauldfpfQWipzYk/d9XmiNExV8++W1un2aTpGniaw9YoGyTT/Q7LHGzheuYqS9TAMPzvBdNxotp8SpKhz37Buud7yRuguo455ZZzI3ZlCP+KfsGlyzP3haWjPS/k1dhKkKq9VlW4c9RxVHPVwJ7kcMmrhW0cM="
