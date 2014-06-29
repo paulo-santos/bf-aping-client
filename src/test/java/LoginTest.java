@@ -9,7 +9,7 @@ import static org.testng.Assert.assertEquals;
  * Created by Paulo. 20-04-2014.
  */
 public class LoginTest {
-    @Test
+    //@Test
     public void login() throws Exception {
         SportsApiRescriptClient sportsApiRescriptClient = new SportsApiRescriptClient();
         LoginResponse response = sportsApiRescriptClient.login("username", "password", "C:\\Path\\to\\keystore\\client-2048.p12","keyStorePassword","APP_KEY");

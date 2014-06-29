@@ -46,8 +46,8 @@ public class SportsApiRpcClient extends AbstractSportsApiClient {
         try {
             ContentResponse response  = httpClient
                     .POST(url)
-                    .header(APP_KEY_HEADER, executionContext.getApplicationKey())
-                    .header(SESSION_TOKEN_HEADER, executionContext.getSessionToken())
+                    .header(properties.getProperty(APP_KEY_HEADER_PROPERTY), executionContext.getApplicationKey())
+                    .header(properties.getProperty(SESSION_TOKEN_HEADER_PROPERTY), executionContext.getSessionToken())
                     .header("accept", "application/json")
                     .header("Content-Type", "application/json")
                     .header("Accept-Encoding", "gzip, deflate")
