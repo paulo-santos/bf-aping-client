@@ -2,7 +2,7 @@
     <servers>
         <server>
             <id>sonatype-nexus-snapshots</id>
-            <username>${env.OSS_DEPLOY_USER}</username>
+            <username>${env.OSS_DEPLOY_USERNAME}</username>
             <password>${env.OSS_DEPLOY_PASSWORD}</password>
         </server>
     </servers>
