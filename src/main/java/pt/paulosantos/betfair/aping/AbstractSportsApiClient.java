@@ -25,6 +25,7 @@ import javax.net.ssl.SSLContext;
 import javax.validation.constraints.NotNull;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.security.KeyStore;
 import java.security.SecureRandom;
@@ -314,7 +315,7 @@ public abstract class AbstractSportsApiClient implements APINGBettingService {
         SslContextFactory sslContextFactory = new SslContextFactory();
 
         SSLContext ctx = SSLContext.getInstance("TLS");
-        KeyManager[] keyManagers = getKeyManagers("pkcs12", new FileInputStream(new File(keyStorePath)), keyStorePassword);
+        KeyManager[] keyManagers = getKeyManagers("pkcs12", getKeyStoreStream(keyStorePath), keyStorePassword);
         ctx.init(keyManagers, null, new SecureRandom());
 
         sslContextFactory.setSslContext(ctx);
@@ -332,6 +333,18 @@ public abstract class AbstractSportsApiClient implements APINGBettingService {
         httpClient.stop();
 
         return objectMapper.readValue(contentResponse.getContentAsString(), LoginResponse.class);
+    }
+
+    private InputStream getKeyStoreStream(String keyStorePath) throws FileNotFoundException {
+        InputStream keyStore = null;
+
+        if (keyStorePath.startsWith("classpath:")){
+            keyStore = getClass().getClassLoader().getResourceAsStream(keyStorePath.substring("classpath:".length()));
+        } else {
+            keyStore = new FileInputStream(new File(keyStorePath));
+        }
+
+        return keyStore;
     }
 
     private static KeyManager[] getKeyManagers(String keyStoreType, InputStream keyStoreFile, String keyStorePassword) throws Exception {
