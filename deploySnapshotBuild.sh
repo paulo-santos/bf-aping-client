@@ -1,8 +1,8 @@
 #!/bin/bash
 
-echo
+echo "JDK Version " $TRAVIS_JDK_VERSION
 
-if [ "$TRAVIS_REPO_SLUG" != "paulo-santos/bf-aping-client"] && ["$TRAVIS_BRANCH" != "master"]  ; then
+if [ "$TRAVIS_REPO_SLUG" != "paulo-santos/bf-aping-client" ] && [ "$TRAVIS_BRANCH" != "master" ]  ; then
   echo "WARNING: Not publishing snapshots as this is a branch" >&2
   exit 1
 fi
