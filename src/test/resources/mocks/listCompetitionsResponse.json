@@ -1,0 +1,18 @@
+[
+  {
+    "competition": {
+      "id": "892425",
+      "name": "Czech 3. Liga"
+    },
+    "marketCount": 8,
+    "competitionRegion": "CZE"
+  },
+  {
+    "competition": {
+      "id": "376041",
+      "name": "Indian I League"
+    },
+    "marketCount": 27,
+    "competitionRegion": "IND"
+  }
+]

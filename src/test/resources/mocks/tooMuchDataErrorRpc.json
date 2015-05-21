@@ -1,0 +1,16 @@
+{
+  "jsonrpc": "2.0",
+  "error": {
+    "code": -32099,
+    "message": "ANGX-0001",
+    "data": {
+      "exceptionname": "APINGException",
+      "APINGException": {
+        "errorDetails": "operation restricts amount of data being returned",
+        "errorCode": "TOO_MUCH_DATA",
+        "requestUUID": "prdang003-04020803-0042e49144"
+      }
+    }
+  },
+  "id": "1"
+}

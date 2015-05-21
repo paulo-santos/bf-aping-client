@@ -2,6 +2,7 @@ import com.betfair.aping.betting.entities.*;
 import com.betfair.aping.betting.enums.MarketProjection;
 import com.betfair.aping.betting.enums.MarketSort;
 import com.google.common.collect.Sets;
+import org.apache.commons.io.IOUtils;
 import org.mockserver.integration.ClientAndServer;
 import org.mockserver.model.Header;
 import org.mockserver.model.HttpRequest;
@@ -14,6 +15,7 @@ import pt.paulosantos.betfair.aping.exceptions.APINGException;
 import pt.paulosantos.betfair.aping.impl.SportsApiRescriptClient;
 import pt.paulosantos.betfair.aping.impl.SportsApiRpcClient;
 
+import java.io.IOException;
 import java.util.*;
 
 import static org.mockserver.integration.ClientAndServer.startClientAndServer;
@@ -37,11 +39,10 @@ public class SportsApiClientTest {
     private APINGBettingService sportsApiRpcClient;
     private ClientAndServer mockServer;
 
-    private static final String listCompetitionsResponse = "[{\"competition\":{\"id\":\"892425\",\"name\":\"Czech 3. Liga\"},\"marketCount\":8,\"competitionRegion\":\"CZE\"},{\"competition\":{\"id\":\"376041\",\"name\":\"Indian I League\"},\"marketCount\":27,\"competitionRegion\":\"IND\"}]";
-    private static final String listEventTypesResponse = "[{\"eventType\":{\"id\":\"1\",\"name\":\"Soccer\"},\"marketCount\":21689},{\"eventType\":{\"id\":\"2\",\"name\":\"Tennis\"},\"marketCount\":886},{\"eventType\":{\"id\":\"3\",\"name\":\"Golf\"},\"marketCount\":75}]";
-    private static final String listEventsResponse = "[{\"event\":{\"id\":\"27113620\",\"name\":\"USA v Germany\",\"countryCode\":\"BR\",\"timezone\":\"Europe/London\",\"openDate\":\"2014-06-26T16:00:00.000Z\"},\"marketCount\":25},{\"event\":{\"id\":\"27113622\",\"name\":\"South Korea v Belgium\",\"countryCode\":\"BR\",\"timezone\":\"Europe/London\",\"openDate\":\"2014-06-26T20:00:00.000Z\"},\"marketCount\":25}]";
-
-    private static final String tooMuchDataErrorRpc = "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32099,\"message\":\"ANGX-0001\",\"data\":{\"exceptionname\":\"APINGException\",\"APINGException\":{\"errorDetails\":\"operation restricts amount of data being returned\",\"errorCode\":\"TOO_MUCH_DATA\",\"requestUUID\":\"prdang003-04020803-0042e49144\"}}},\"id\":\"1\"}";
+    private static final String listCompetitionsResponseMockPath = "/mocks/listCompetitionsResponse.json";
+    private static final String listEventTypesResponseMockPath = "/mocks/listEventTypesResponse.json";
+    private static final String listEventsResponseMockPath = "/mocks/listEventsResponse.json";
+    private static final String tooMuchDataErrorRpcMockPath = "/mocks/tooMuchDataErrorRpc.json";
 
     @BeforeClass
     public void init() {
@@ -69,7 +70,7 @@ public class SportsApiClientTest {
     }
 
     @Test
-    public void testListCompetitionsRescript() throws APINGException, InterruptedException {
+    public void testListCompetitionsRescript() throws APINGException, InterruptedException, IOException {
 
         mockServer.when(
                 rescriptBaseRequest()
@@ -78,7 +79,7 @@ public class SportsApiClientTest {
                 .respond(
                         response()
                                 .withStatusCode(200)
-                                .withBody(listCompetitionsResponse)
+                                .withBody(readFile(listCompetitionsResponseMockPath))
                 );
 
         MarketFilter filter = new MarketFilter();
@@ -90,7 +91,7 @@ public class SportsApiClientTest {
 
 
     @Test
-    public void testListCompetitionsRpc() throws APINGException, InterruptedException {
+    public void testListCompetitionsRpc() throws APINGException, InterruptedException, IOException {
         mockServer.when(
                 rpcBaseRequest()
                         .withBody(regex(".*SportsAPING/v1.0/listCompetitions.*"))
@@ -98,7 +99,7 @@ public class SportsApiClientTest {
                 .respond(
                         response()
                                 .withStatusCode(200)
-                                .withBody("{\"jsonrpc\":\"2.0\",\"result\":" + listCompetitionsResponse + ",\"id\":\"1\"}")
+                                .withBody("{\"jsonrpc\":\"2.0\",\"result\":" + readFile(listCompetitionsResponseMockPath) + ",\"id\":\"1\"}")
                 );
 
         MarketFilter filter = new MarketFilter();
@@ -124,14 +125,14 @@ public class SportsApiClientTest {
     }
 
     @Test
-    public void testListEventTypes() throws APINGException {
+    public void testListEventTypes() throws APINGException, IOException {
         mockServer.when(
                 rescriptBaseRequest()
                         .withPath("/exchange/betting/rest/v1.0/listEventTypes/"))
                 .respond(
                         response()
                                 .withStatusCode(200)
-                                .withBody(listEventTypesResponse)
+                                .withBody(readFile(listEventTypesResponseMockPath))
                 );
 
         MarketFilter filter = new MarketFilter();
@@ -140,7 +141,7 @@ public class SportsApiClientTest {
     }
 
     @Test
-    public void testListEventTypesRpc() throws APINGException {
+    public void testListEventTypesRpc() throws APINGException, IOException {
         mockServer.when(
                 rpcBaseRequest()
                         .withBody(regex(".*SportsAPING/v1.0/listEventTypes.*"))
@@ -148,7 +149,7 @@ public class SportsApiClientTest {
                 .respond(
                         response()
                                 .withStatusCode(200)
-                                .withBody("{\"jsonrpc\":\"2.0\",\"result\":" + listEventTypesResponse + ",\"id\":\"1\"}")
+                                .withBody("{\"jsonrpc\":\"2.0\",\"result\":" + readFile(listEventTypesResponseMockPath) + ",\"id\":\"1\"}")
                 );
 
         MarketFilter filter = new MarketFilter();
@@ -174,7 +175,7 @@ public class SportsApiClientTest {
     }
 
     @Test
-    public void testListEventsResponseRescript() throws APINGException {
+    public void testListEventsResponseRescript() throws APINGException, IOException {
         mockServer.when(
                 rescriptBaseRequest()
                         .withPath("/exchange/betting/rest/v1.0/listEvents/")
@@ -182,7 +183,7 @@ public class SportsApiClientTest {
                 .respond(
                         response()
                                 .withStatusCode(200)
-                                .withBody(listEventsResponse)
+                                .withBody(readFile(listEventsResponseMockPath))
                 );
         MarketFilter filter = new MarketFilter();
         List<EventResult> eventResults = sportsApiRescriptClient.listEvents(filter, null, executionContext);
@@ -190,7 +191,7 @@ public class SportsApiClientTest {
     }
 
     @Test
-    public void testListEventsResponseRescriptRpc() throws APINGException {
+    public void testListEventsResponseRescriptRpc() throws APINGException, IOException {
         mockServer.when(
                 rpcBaseRequest()
                         .withBody(regex(".*SportsAPING/v1.0/listEvents.*"))
@@ -199,7 +200,7 @@ public class SportsApiClientTest {
                 .respond(
                         response()
                                 .withStatusCode(200)
-                                .withBody("{\"jsonrpc\":\"2.0\",\"result\":" + listEventsResponse + ",\"id\":\"1\"}")
+                                .withBody("{\"jsonrpc\":\"2.0\",\"result\":" + readFile(listEventsResponseMockPath) + ",\"id\":\"1\"}")
                 );
         MarketFilter filter = new MarketFilter();
         List<EventResult> eventResults = sportsApiRescriptClient.listEvents(filter, null, executionContext);
@@ -221,7 +222,7 @@ public class SportsApiClientTest {
     }
 
     @Test(expectedExceptions = APINGException.class)
-    public void shouldThrowExceptionRpc() throws APINGException {
+    public void shouldThrowExceptionRpc() throws APINGException, IOException {
         mockServer.when(
                 rpcBaseRequest()
                         .withBody(regex(".*SportsAPING/v1.0/listMarketCatalogue.*\"maxResults\":1000.*"))
@@ -230,10 +231,10 @@ public class SportsApiClientTest {
                 .respond(
                         response()
                                 .withStatusCode(200)
-                                .withBody(tooMuchDataErrorRpc)
+                                .withBody(readFile(tooMuchDataErrorRpcMockPath))
                 );
         MarketFilter filter = new MarketFilter();
-        filter.setEventTypeIds(new HashSet<String>(Arrays.asList("1", "2", "7")));
+        filter.setEventTypeIds(new HashSet<>(Arrays.asList("1", "2", "7")));
 
         Set<MarketProjection> marketProjectionSet = Sets.newHashSet();
         marketProjectionSet.add(MarketProjection.COMPETITION);
@@ -246,5 +247,9 @@ public class SportsApiClientTest {
 
         sportsApiRpcClient.listMarketCatalogue(filter, marketProjectionSet, MarketSort.MAXIMUM_TRADED, 1000, null, executionContext);
 
+    }
+
+    private String readFile(String classpath) throws IOException {
+        return IOUtils.toString(this.getClass().getResourceAsStream(classpath));
     }
 }
