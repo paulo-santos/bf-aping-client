@@ -27,17 +27,18 @@ public class SportsApiRescriptClient extends AbstractSportsApiClient {
     private static final String REST_PATH_PROPERTY = "aping.betting.rescript.path";
     private static final String REST_PATH = "/rest/v1.0/";
 
+    private static final String BASE_URL = properties.getProperty(HOST_PROPERTY, HOST) +
+                                           properties.getProperty(BETTING_BASE_PATH_PROPERTY, BETTING_BASE_PATH) +
+                                           properties.getProperty(REST_PATH_PROPERTY, REST_PATH);
+
     @Override
     protected <T> T execute(ExecutionContext executionContext, final ApiNgOperation operation, Map<Parameter, Object> params) throws APINGException {
 
-        String url = properties.getProperty(HOST_PROPERTY, HOST) +
-                     properties.getProperty(BETTING_BASE_PATH_PROPERTY, BETTING_BASE_PATH) +
-                     properties.getProperty(REST_PATH_PROPERTY, REST_PATH) +
-                     operation.toString() + "/";
+        T result = null;
 
         try {
             ContentResponse response = httpClient
-                    .POST(url)
+                    .POST(BASE_URL + operation.toString() + "/")
                     .header(properties.getProperty(APP_KEY_HEADER_PROPERTY), executionContext.getApplicationKey())
                     .header(properties.getProperty(SESSION_TOKEN_HEADER_PROPERTY), executionContext.getSessionToken())
                     .header("accept", "application/json")
@@ -47,23 +48,21 @@ public class SportsApiRescriptClient extends AbstractSportsApiClient {
                     .send();
 
             if (response.getStatus() == HttpStatus.OK_200) {
-                return objectMapper.readValue(response.getContentAsString(), operation.getResponseType());
+                result = objectMapper.readValue(response.getContentAsString(), operation.getResponseType());
             } else {
                 throw objectMapper.readValue(response.getContentAsString(), APINGException.class);
             }
 
-        } catch (InterruptedException e) {
+        } catch (InterruptedException | ExecutionException e) {
             LOG.error("Unable to send request", e);
         } catch (TimeoutException e) {
             throw new APINGException(e.getMessage(), ErrorCode.TIMEOUT_ERROR, null);
-        } catch (ExecutionException e) {
-            LOG.error("Unable to send request", e);
         } catch (JsonProcessingException e) {
             LOG.error("Error processing json", e);
         } catch (IOException e) {
             LOG.error("Error mapping response to java object", e);
         }
 
-        return null;
+        return result;
     }
 }

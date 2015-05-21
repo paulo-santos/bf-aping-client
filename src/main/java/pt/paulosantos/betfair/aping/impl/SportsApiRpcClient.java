@@ -31,21 +31,23 @@ public class SportsApiRpcClient extends AbstractSportsApiClient {
     private static final String RPC_PATH = "/json-rpc/v1";
     private static final String RPC_METHOD_PREFIX = "SportsAPING/v1.0/";
 
+    private static final String URL = properties.getProperty(HOST_PROPERTY, HOST) +
+                                      properties.getProperty(BETTING_BASE_PATH_PROPERTY, BETTING_BASE_PATH) +
+                                      properties.getProperty(RPC_PATH_PROPERTY, RPC_PATH);
+
     @Override
     protected <T> T execute(ExecutionContext executionContext, ApiNgOperation operation, Map<Parameter, Object> params) throws APINGException {
 
+        T result = null;
+
         JsonRpcRequest request = new JsonRpcRequest();
         request.setId("1");
-        request.setMethod(properties.getProperty(RPC_METHOD_PREFIX_PROPERTY, RPC_METHOD_PREFIX)+operation.toString());
+        request.setMethod(properties.getProperty(RPC_METHOD_PREFIX_PROPERTY, RPC_METHOD_PREFIX) + operation.toString());
         request.setParams(params);
-
-        String url = properties.getProperty(HOST_PROPERTY, HOST) +
-                     properties.getProperty(BETTING_BASE_PATH_PROPERTY, BETTING_BASE_PATH) +
-                     properties.getProperty(RPC_PATH_PROPERTY, RPC_PATH);
 
         try {
             ContentResponse response  = httpClient
-                    .POST(url)
+                    .POST(URL)
                     .header(properties.getProperty(APP_KEY_HEADER_PROPERTY), executionContext.getApplicationKey())
                     .header(properties.getProperty(SESSION_TOKEN_HEADER_PROPERTY), executionContext.getSessionToken())
                     .header("accept", "application/json")
@@ -59,21 +61,19 @@ public class SportsApiRpcClient extends AbstractSportsApiClient {
             if (responseContainer.getError() != null) {
                 throw responseContainer.getError().getData().getAPINGException();
             } else {
-                return responseContainer.getResult();
+                result = responseContainer.getResult();
             }
 
-        } catch (InterruptedException e) {
+        } catch (InterruptedException | ExecutionException e) {
             LOG.error("Unable to send request", e);
         } catch (TimeoutException e) {
             throw new APINGException(e.getMessage(), ErrorCode.TIMEOUT_ERROR, null);
-        } catch (ExecutionException e) {
-            LOG.error("Unable to send request", e);
         } catch (JsonProcessingException e) {
             LOG.error("Error processing json", e);
         } catch (IOException e) {
             LOG.error("Error mapping response to java object", e);
         }
 
-        return null;
+        return result;
     }
 }
