@@ -1,0 +1,12 @@
+{
+  "detail": {
+    "exceptionname": "APINGException",
+    "APINGException": {
+      "errorDetails": "",
+      "errorCode": "TOO_MUCH_DATA",
+      "requestUUID": "prdang-2882be-04292216-005a8e1d12"
+    }
+  },
+  "faultcode": "Client",
+  "faultstring": "ANGX-0001"
+}

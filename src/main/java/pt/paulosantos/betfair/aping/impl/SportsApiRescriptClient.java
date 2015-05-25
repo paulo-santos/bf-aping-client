@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pt.paulosantos.betfair.aping.AbstractSportsApiClient;
 import pt.paulosantos.betfair.aping.core.ExecutionContext;
+import pt.paulosantos.betfair.aping.dto.rescript.APINGExceptionWrapper;
 import pt.paulosantos.betfair.aping.enums.ApiNgOperation;
 import pt.paulosantos.betfair.aping.enums.Parameter;
 import pt.paulosantos.betfair.aping.exceptions.APINGException;
@@ -50,7 +51,8 @@ public class SportsApiRescriptClient extends AbstractSportsApiClient {
             if (response.getStatus() == HttpStatus.OK_200) {
                 result = objectMapper.readValue(response.getContentAsString(), operation.getResponseType());
             } else {
-                throw objectMapper.readValue(response.getContentAsString(), APINGException.class);
+                APINGExceptionWrapper apingExceptionWrapper = objectMapper.readValue(response.getContentAsString(), APINGExceptionWrapper.class);
+                throw apingExceptionWrapper.getErrorDetail().getAPINGException();
             }
 
         } catch (InterruptedException | ExecutionException e) {

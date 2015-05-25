@@ -1,5 +1,6 @@
 package pt.paulosantos.betfair.aping;
 
+import com.betfair.aping.LoginResponse;
 import com.betfair.aping.betting.entities.*;
 import com.betfair.aping.betting.enums.*;
 import pt.paulosantos.betfair.aping.core.ExecutionContext;
@@ -223,4 +224,5 @@ public interface APINGBettingService {
      */
     UpdateExecutionReport updateOrders(@NotNull String marketId, @NotNull List<UpdateInstruction> instructions, String customerRef, @NotNull ExecutionContext executionContext) throws APINGException;
 
+    LoginResponse login(String username, String password, String keyStorePath, String keyStorePassword, String appkey) throws Exception;
 }
